@@ -27,7 +27,7 @@ class Controller extends BaseController
         $path = Storage::disk('public')->put('images', $image);
         $name = basename($path);
 
-        return 'storage/images/' . $name;
+        return 'uploads/images/' . $name;
     }
 
     protected function uploadDocument($doc)
@@ -35,7 +35,7 @@ class Controller extends BaseController
         $fileName = 'profile-'.time().'.'.$doc->getClientOriginalExtension();
         $path = $doc->storeAs('files', $fileName, 'public');
 
-        return 'storage/files/' . $fileName;
+        return 'uploads/files/' . $fileName;
     }
 
 }
