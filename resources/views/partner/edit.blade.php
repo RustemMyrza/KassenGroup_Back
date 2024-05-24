@@ -1,13 +1,14 @@
 @extends('adminlte::page')
 
-@section('title', 'Редактирование партнера ')
+@section('title', 'Редактирование блока')
 
 @section('content_header')
-    <h1>Редактирование партнера</h1>
+    <h1>Редактирование блока</h1>
 @stop
+
 @section('content')
     <div class="card-body">
-        <a href="{{ url('/admin/partner?block_id='.request('block_id')) }}" title="Назад"><button class="btn btn-warning btn-sm"><i class="fa fa-arrow-left" aria-hidden="true"></i> Назад</button></a>
+        <a href="{{ url('/admin/partner') }}" title="Назад"><button class="btn btn-warning btn-sm"><i class="fa fa-arrow-left" aria-hidden="true"></i> Назад</button></a>
         <br />
         <br />
 

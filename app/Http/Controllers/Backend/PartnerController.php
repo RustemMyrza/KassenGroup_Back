@@ -3,25 +3,23 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use File;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Partner;
 use Illuminate\Http\Request;
-use App\Models\Translate;
 
 class PartnerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\View\View
-     */
     public function index(Request $request)
     {
-        $requestData = $request->all();
+        $keyword = $request->get('search');
         $perPage = 25;
-        $partner = Partner::where('block_id', $requestData['block_id'])->latest()->paginate($perPage);
 
+        if (!empty($keyword)) {
+            $partner = Partner::where('image', 'LIKE', "%$keyword%")
+                ->latest()->paginate($perPage);
+        } else {
+            $partner = Partner::latest()->paginate($perPage);
+        }
+        // $this->getDataFromTable();
         return view('partner.index', compact('partner'));
     }
 
@@ -45,47 +43,24 @@ class PartnerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ],
             [
-                'image.required' => 'Загрузите изображение',
+                'image.required' => 'Изображение для блока обязательно',
                 'image.mimes' => 'Проверьте формат изображения',
                 'image.max' => 'Размер файла не может превышать 2МБ'
             ]);
-
         $requestData = $request->all();
-
         if ($request->hasFile('image')) {
-
             $path = $this->uploadImage($request->file('image'));
-            $requestData['image'] = $path;
         }
 
-        $title = new Translate();
-        $title->ru = $requestData['title']['ru'];
-        $title->en = $requestData['title']['en'];
-        $title->kz = $requestData['title']['kz'];
-        $title->tr = $requestData['title']['tr'];
-        $title->ch = $requestData['title']['ch'];
-        $title->phr = $requestData['title']['phr'];
-        $title->save();
-        $content = new Translate();
-        $content->ru = $requestData['content']['ru'];
-        $content->en = $requestData['content']['en'];
-        $content->kz = $requestData['content']['kz'];
-        $content->tr = $requestData['content']['tr'];
-        $content->ch = $requestData['content']['ch'];
-        $content->phr = $requestData['content']['phr'];
-        $content->save();
-
-        $partner = new Partner();
-        $partner->title = $title->id;
-        $partner->content = $content->id;
-        $partner->image = $requestData['image'];
-        $partner->block_id = $requestData['block_id'];
+        $partner= new Partner();
+        $partner->image = $path ?? null;
+        $partner->type = $requestData['type'];
         $partner->save();
 
-        return redirect('admin/partner?block_id=' . $requestData['block_id'])->with('flash_message', 'Добавлен');
+        return redirect('admin/partner')->with('flash_message', 'Блок добавлен');
     }
 
     /**
@@ -98,7 +73,6 @@ class PartnerController extends Controller
     public function show($id)
     {
         $partner = Partner::findOrFail($id);
-
         return view('partner.show', compact('partner'));
     }
 
@@ -112,7 +86,6 @@ class PartnerController extends Controller
     public function edit($id)
     {
         $partner = Partner::findOrFail($id);
-
         return view('partner.edit', compact('partner'));
     }
 
@@ -127,43 +100,34 @@ class PartnerController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:3072',
         ],
             [
                 'image.mimes' => 'Проверьте формат изображения',
-                'image.max' => 'Размер файла не может превышать 2МБ'
+                'image.max' => 'Размер файла не может превышать 3МБ'
             ]);
+
         $requestData = $request->all();
         $partner = Partner::findOrFail($id);
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('image')) 
+        {
             if ($partner->image != null) {
-                Storage::disk('static')->delete($partner->image);
+                unlink($partner->image);
             }
             $path = $this->uploadImage($request->file('image'));
-            $requestData['image'] = $path;
-            $partner->image = $requestData['image'];
+            $partner->image = $path;
+        }
+        else
+        {
+            if ($partner->image != null) {
+                unlink($partner->image);
+            }
         }
 
-        $title = Translate::find($partner->title);
-        $title->ru = $requestData['title']['ru'];
-        $title->en = $requestData['title']['en'];
-        $title->kz = $requestData['title']['kz'];
-        $title->tr = $requestData['title']['tr'];
-        $title->ch = $requestData['title']['ch'];
-        $title->phr = $requestData['title']['phr'];
-        $title->update();
-        $content = Translate::find($partner->content);
-        $content->ru = $requestData['content']['ru'];
-        $content->en = $requestData['content']['en'];
-        $content->kz = $requestData['content']['kz'];
-        $content->tr = $requestData['content']['tr'];
-        $content->ch = $requestData['content']['ch'];
-        $content->phr = $requestData['content']['phr'];
-        $content->update();
-        $partner->block_id = $requestData['block_id'];
+        $partner->type = $requestData['type'];
         $partner->update();
 
-        return redirect('admin/partner?block_id=' . $request->get('block_id'))->with('flash_message', 'Изменен');
+        return redirect('admin/partner')->with('flash_message', 'Блок изменен');
     }
 
     /**
@@ -177,15 +141,10 @@ class PartnerController extends Controller
     {
         $partner = Partner::find($id);
         if ($partner->image != null) {
-            Storage::disk('static')->delete($partner->image);
+            unlink($partner->image);
         }
-        $title = Translate::find($partner->title);
-        $title->delete();
-
-        $content = Translate::find($partner->content);
-        $content->delete();
         $partner->delete();
 
-        return redirect('admin/partner?block_id=' . $partner->block_id)->with('flash_message', 'Удален');
+        return redirect('admin/partner')->with('flash_message', 'Блок удален');
     }
 }

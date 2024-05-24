@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Translate;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PartnerResource extends JsonResource
@@ -15,13 +14,9 @@ class PartnerResource extends JsonResource
      */
     public function toArray($request)
     {
-        $lang = $request->lang;
-        return [
-            'id'    =>  $this->id,
-            'title' =>  Translate::where('id' ,$this->title)->value($lang),
-            'content' =>  Translate::where('id' ,$this->content)->value($lang),
-            'image' =>  $this->image,
-            'block_id'  =>  $this->block_id,
+        return [ 
+            'id' => $this->id,
+            'logo' => $this->image ? url($this->image) : ''
         ];
     }
 }

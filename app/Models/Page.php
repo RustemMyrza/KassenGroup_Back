@@ -2,22 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Page extends Model
+abstract class Page extends Model
 {
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-    protected $table = 'pages';
+    use HasFactory;
 
-    /**
-    * The database primary key value.
-    *
-    * @var string
-    */
     protected $primaryKey = 'id';
 
     /**
@@ -25,7 +16,17 @@ class Page extends Model
      *
      * @var array
      */
-    protected $fillable = ['title', 'meta_title', 'meta_description','slug'];
+    protected $fillable = ['title', 'content', 'image'];
 
+    protected $table;
 
+    public function getTitle()
+    {
+        return $this->hasOne(Translate::class, 'id', 'title');
+    }
+
+    public function getContent()
+    {
+        return $this->hasOne(Translate::class, 'id', 'content');
+    }
 }

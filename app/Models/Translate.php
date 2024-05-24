@@ -25,7 +25,7 @@ class Translate extends Model
      *
      * @var array
      */
-    protected $fillable = ['ru', 'en', 'kz', 'tr', 'ch', 'phr'];
+    protected $fillable = ['ru', 'kz', 'en'];
 
     
 }

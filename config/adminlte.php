@@ -230,16 +230,98 @@ return [
             'url'  => 'home',
             'icon' => 'fas fa-fw fa-home',
         ],
-
+        [
+            'text' => 'Навигационное меню',
+            'url'  => '/admin/navbar',
+            'icon' => 'fas fa-fw fa-bars',
+        ],
+        [
+            'text' => 'Контакты (Footer)',
+            'url'  => '/admin/footer-contact',
+            'icon' => 'fas fa-fw fa-font',
+        ],
+        [
+            'text' => 'Логотип',
+            'url'  => '/admin/logo',
+            'icon' => 'fas fa-fw fa-plus',
+        ],
+        [
+            'text' => 'Партнеры',
+            'url'  => '/admin/partner',
+            'icon' => 'fas fa-fw fa-users',
+        ],
+        [
+            'text'    => 'Формы',
+            'icon'    => 'fas fa-fw fa-share',
+            'submenu' => [
+                [
+                    'text'    => 'Содержимое',
+                    'icon'    => 'fas fa-fw fa-align-justify',
+                    'submenu' => [
+                        [
+                            'text' => 'Заявка',
+                            'url'  => '/admin/form/content/application',
+                            'icon'    => 'fas fa-fw fa-check',
+                        ],
+                        [
+                            'text' => 'Подписки',
+                            'url'  => '/admin/form/content/subscription',
+                            'icon'    => 'fas fa-fw fa-check',
+                        ]
+                    ],
+                ],
+                [
+                    'text'    => 'Данные',
+                    'icon'    => 'fas fa-fw fa-table',
+                    'submenu' => [
+                        [
+                            'text' => 'Заявка',
+                            'url'  => '/admin/form/data/application',
+                            'icon'    => 'fas fa-fw fa-check',
+                        ],
+                        [
+                            'text' => 'Подписки',
+                            'url'  => '/admin/form/data/subscription',
+                            'icon'    => 'fas fa-fw fa-check',
+                        ]
+                    ],
+                ]
+            ],
+        ],
         [
             'text'    => 'Страницы',
             'icon'    => 'fas fa-fw fa-share',
             'submenu' => [
                 [
-                    'text' => 'Блоки о нас',
-                    'url'  => '/admin/about-block',
-                    'icon'    => 'fas fa-fw fa-info',
+                    'text' => 'Главная страница',
+                    'url'  => '/admin/page/main',
+                    'icon'    => 'fas fa-fw fa-file',
                 ],
+                [
+                    'text' => 'О компании',
+                    'url'  => '/admin/page/aboutUs',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Экспорт зерна',
+                    'url'  => '/admin/page/grainExports',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Закуп зерна',
+                    'url'  => '/admin/page/grainPurchase',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Услуги элеватора',
+                    'url'  => '/admin/page/elevatorServices',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Контакты',
+                    'url'  => '/admin/page/contacts',
+                    'icon'    => 'fas fa-fw fa-file',
+                ]
             ],
         ],
         // [

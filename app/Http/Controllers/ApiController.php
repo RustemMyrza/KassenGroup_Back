@@ -3,35 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\AnalyticsResource;
-use App\Http\Resources\NewsResource;
-use App\Http\Resources\ContactsResource;
-use App\Http\Resources\OpinionResource;
-use App\Http\Resources\PartnerBlockResource;
+use App\Http\Resources\PageResource;
 use App\Http\Resources\PartnerResource;
-use App\Http\Resources\ServiceResource;
-use App\Http\Resources\TechnologyResource;
-use App\Models\Analytics;
-use App\Models\Banner;
-use App\Models\AnalyticsBlock;
-use App\Models\AboutBlock;
-use App\Models\Block;
-use App\Models\Contacts;
-use App\Models\Feedback;
-use App\Models\MarketAnalysi;
-use App\Models\News;
-use App\Models\Opinion;
-use App\Models\Page;
+use App\Http\Resources\NavBarResource;
+use App\Http\Resources\LogoResource;
+use App\Http\Resources\FooterContactsResource;
+use App\Models\Pages\MainPage;
+use App\Models\Pages\AboutUsPage;
+use App\Models\Pages\GrainExportsPage;
+use App\Models\Pages\GrainPurchasePage;
+use App\Models\Pages\ElevatorServicesPage;
+use App\Models\Pages\ContactsPage;
+use App\Models\NavBar;
+use App\Models\Logo;
 use App\Models\Partner;
-use App\Models\PartnerBlock;
-use App\Models\Purpose;
-use App\Models\Question;
-use App\Models\Service;
-use App\Models\Slider;
-use App\Models\Technology;
-use App\Models\WorkPrinciple;
+use App\Models\FooterContact;
+use App\Models\FormsContent\ApplicationFormContent;
+use App\Models\FormsContent\SubscriptionFormContent;
 use Illuminate\Http\Request;
-use App\Library\ResourcePaginator;
+use App\Library\ResourcePaginator;;
+use stdClass;
+
+use function Ramsey\Uuid\v1;
 
 class ApiController extends Controller
 {
@@ -40,484 +33,481 @@ class ApiController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function homePage()
+    private function navbar ()
     {
-        $lang = request('lang');
-
-        $data['banners'] = Banner::join('translates as title', 'title.id', 'banner.title')
-            ->join('translates as content', 'content.id', 'banner.content')
-            ->select('banner.id', 'banner.created_at', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content', 'banner.image')
-            ->get();
-
-        $data['purposes'] = Purpose::join('translates as title', 'title.id', 'purposes.title')
-            ->select('purposes.id', 'purposes.logo', 'title.' . $lang . ' as title')
-            ->orderBy('purposes.created_at', 'desc')
-            ->get();
-
-        $data['news'] = News::join('translates as title', 'title.id', 'news.title')
-            ->join('translates as content', 'content.id', 'news.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'news.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'news.meta_description')
-            ->select('news.id', 'news.image', 'news.viewing', 'title.' . $lang . ' as title',
-                'content.' . $lang . ' as content', 'news.created_at', 'news.video', 'news.link', 'news.popular',
-                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->orderBy('news.created_at', 'desc')
-            ->get();
-
-        $data['technologies'] = Technology::join('translates as title', 'title.id', 'technology.title')
-            ->join('translates as content', 'content.id', 'technology.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'technology.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'technology.meta_description')
-            ->select('technology.id', 'technology.image', 'technology.viewing',
-                'title.' . $lang . ' as title', 'content.' . $lang . ' as content', 'technology.created_at',
-                'technology.video', 'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->orderBy('technology.created_at', 'desc')
-            ->get();
-
-        $data['partners'] = Partner::pluck('image');
-
-        return response()->json($data);
+        $navbar = NavBar::query()->with('getName')->get();
+        return NavBarResource::collection($navbar);
     }
 
-    public function header(Request $request)
+    private function applicationFormContent ()
     {
-        $data = Contacts::join('translates as phone', 'phone.id', 'contacts.phone_number')
-            ->select('phone.' . $request->lang . ' as phone_number')->first();
+        $applicationFormContent = ApplicationFormContent::query()->with('getTitle', 'getContent')->get();
+        $form = new stdClass;
 
-        return response()->json($data);
-    }
-
-    public function footer()
-    {
-        $data = new ContactsResource(Contacts::latest()->first());
-
-        return response()->json($data);
-    }
-
-    public function about(Request $request)
-    {
-        $page_general = Page::where('slug', 'about')->first();
-        if ($page_general) {
-            $data['general']['title'] = $page_general->title;
-            $data['general']['meta_title'] = $page_general->meta_title;
-            $data['general']['meta_description'] = $page_general->meta_description;
+        foreach ($applicationFormContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $title = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $form->namePlaceholder = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $form->phonePlaceholder = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $form->submitButton = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $image = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
-        $data['about_blocks'] = AboutBlock::join('translates as content', 'content.id', 'about_blocks.content')->select('about_blocks.id', 'about_blocks.image', 'content.' . $request->lang . ' as content', 'about_blocks.created_at')->latest()->get();
-        $data['work_principles_title'] = Block::where('block_type', 'work_principles')->first();
-        $data['work_principles_blocks'] = WorkPrinciple::latest()->get();
-        $data['market_analysis'] = MarketAnalysi::latest()->get();
-
-        return response()->json($data);
+        $applicationFormApi = new stdClass;
+        $applicationFormApi->title = $title;
+        $applicationFormApi->form = $form;
+        $applicationFormApi->image = $image;
+        return $applicationFormApi;
     }
 
-    public function services()
+    private function subscriptionFormContent ()
     {
-        $page_general = Page::where('slug', 'service')->first();
-        if ($page_general) {
-            $data['general']['title'] = $page_general->title;
-            $data['general']['meta_title'] = $page_general->meta_title;
-            $data['general']['meta_description'] = $page_general->meta_description;
+        $subscriptionFormContent = SubscriptionFormContent::query()->with('getTitle', 'getContent')->get();
+
+        foreach ($subscriptionFormContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $description = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $emailPlaceholder = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
-        $data['services'] = Service::latest()->get();
-
-        return response()->json($data);
+        $subscriptionFormApi = new stdClass;
+        $subscriptionFormApi->description = $description;
+        $subscriptionFormApi->emailPlaceholder = $emailPlaceholder;
+        return $subscriptionFormApi;
     }
 
-    public function analytics()
+    private function footerContacts ()
     {
-        $page_general = Page::where('slug', 'analytic')->first();
-        if ($page_general) {
-            $data['general']['title'] = $page_general->title;
-            $data['general']['meta_title'] = $page_general->meta_title;
-            $data['general']['meta_description'] = $page_general->meta_description;
+        $footerContactTexts = FooterContact::query()->with('getText')->get();
+        $emails = new stdClass;
+        $phoneNumbers = new stdClass;
+        foreach($footerContactTexts as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $phoneNumbers->salesDepartment = $value ? new FooterContactsResource($value) : '';
+                    break;
+                case 1:
+                    $phoneNumbers->reception = $value ? new FooterContactsResource($value) : '';
+                    break;
+                case 2:
+                    $emails->elevator = $value ? new FooterContactsResource($value) : '';
+                    break;
+                case 3:
+                    $emails->agroNan = $value ? new FooterContactsResource($value) : '';
+                    break;
+                case 4:
+                    $phoneNumbers->deputyDirector = $value ? new FooterContactsResource($value) : '';
+                    break;
+                case 5:
+                    $phoneNumbers->director = $value ? new FooterContactsResource($value) : '';
+                    break;
+            }
         }
-
-        $data['analytics'] = AnalyticsResource::collection(Analytics::latest()->get());
-
-        return response()->json($data);
+        $footerContactsApi = new stdClass;
+        $footerContactsApi->phoneNumbers = $phoneNumbers;
+        $footerContactsApi->emails = $emails;
+        return $footerContactsApi;
     }
-
-    public function contacts()
+    
+    public function mainPage ()
     {
-        $page_general = Page::where('slug', 'contacts')->first();
-        if ($page_general) {
-            $data['general']['title'] = $page_general->title;
-            $data['general']['meta_title'] = $page_general->meta_title;
-            $data['general']['meta_description'] = $page_general->meta_description;
+        $mainPageContent = MainPage::query()->with('getTitle', 'getContent')->get();
+        $partners = Partner::query()->get();
+        $partners = PartnerResource::collection($partners);
+        foreach ($partners as $item)
+        {
+            if ($item->type == 1)
+            {
+                $type_1[] = $item;
+            }
+            else if ($item->type == 2)
+            {
+                $type_2[] = $item;
+            }
+            else
+            {
+                $type_3[] = $item;
+            }
         }
-        $data['contacts'] = ContactsResource::collection(Contacts::latest()->get());
+        
+        $banner = new stdClass;
+        $production = new stdClass;
+        $aboutCompany = new stdClass;
+        $elevator = new stdClass;
+        $exportGrain = new stdClass;
+        $advantage = new stdClass;
+        $ourPartners = new stdClass;
+        $ourPartners->type_1 = new stdClass;
+        $ourPartners->type_2 = new stdClass;
+        $ourPartners->type_3 = new stdClass;
 
-        return response()->json($data);
-    }
-
-    public function feedback(Request $request)
-    {
-        $requestData = $request->all();
-
-        $feedback = new Feedback();
-
-        $feedback->name = $requestData['formData']['name'];
-        $feedback->phone_number = $requestData['formData']['phone'];
-        $feedback->email = $requestData['formData']['email'];
-        $feedback->description = $requestData['formData']['study'];
-
-        if (isset($requestData['formData']['company'])) {
-            $feedback->company = $requestData['formData']['company'];
+        foreach ($mainPageContent as $key => $value)
+        {
+            switch ($key)
+            {
+                case 0:
+                    $banner->backgroundImage = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $banner->mainBlock = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $banner->applicationButton = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $production->aboutButton = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $production->block = $value ? new PageResource($value) : '';
+                    break;
+                case 5:
+                    $production->readMoreButton = $value ? new PageResource($value) : '';
+                    break;
+                case 6:
+                    $production->images[] = $value ? new PageResource($value) : '';
+                    break;
+                case 7:
+                    $production->images[] = $value ? new PageResource($value) : '';
+                    break;
+                case 8:
+                    $production->images[] = $value ? new PageResource($value) : '';
+                    break;
+                case 9:
+                    $production->images[] = $value ? new PageResource($value) : '';
+                    break;
+                case 10:
+                    $production->images[] = $value ? new PageResource($value) : '';
+                    break;
+                case 11:
+                    $aboutCompany->title = $value ? new PageResource($value) : '';
+                    break;
+                case 12:
+                    $aboutCompany->text_1 = $value ? new PageResource($value) : '';
+                    break;
+                case 13:
+                    $aboutCompany->text_2 = $value ? new PageResource($value) : '';
+                    break;
+                case 14:
+                    $aboutCompany->cityBlock = $value ? new PageResource($value) : '';
+                    break;
+                case 15:
+                    $elevator->block = $value ? new PageResource($value) : '';
+                    break;
+                case 16:
+                    $elevator->toSiteButton = $value ? new PageResource($value) : '';
+                    break;
+                case 17:
+                    $exportGrain->backgroundImage = $value ? new PageResource($value) : '';
+                    break;
+                case 18:
+                    $exportGrain->block = $value ? new PageResource($value) : '';
+                    break;
+                case 19:
+                    $advantage->title = $value ? new PageResource($value) : '';
+                    break;
+                case 20:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 21:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 22:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 23:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 24:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 25:
+                    $advantage->advantageBlocks[] = $value ? new PageResource($value) : '';
+                    break;
+                case 26:
+                    $ourPartners->title = $value ? new PageResource($value) : '';
+                    break;
+                case 27:
+                    $ourPartners->type_1->title = $value ? new PageResource($value) : '';
+                    break;
+                case 28:
+                    $ourPartners->type_2->title = $value ? new PageResource($value) : '';
+                    break;
+                case 29:
+                    $ourPartners->type_3->title = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
-        if (isset($requestData['formData']['viewActivity'])) {
-            $feedback->kind_business = $requestData['formData']['viewActivity'];
+        $ourPartners->type_1->partners = isset($type_1) ? $type_1 : [];
+        $ourPartners->type_2->partners = isset($type_2) ? $type_2 : [];
+        $ourPartners->type_3->partners = isset($type_3) ? $type_3 : [];
+
+        $mainPageApi = new stdClass;
+        $mainPageApi->banner = $banner;
+        $mainPageApi->production = $production;
+        $mainPageApi->aboutCompany = $aboutCompany;
+        $mainPageApi->elevator = $elevator;
+        $mainPageApi->exportGrain = $exportGrain;
+        $mainPageApi->advantage = $advantage;
+        $mainPageApi->ourPartners = $ourPartners;
+        return $mainPageApi;
+    }
+
+    public function aboutUsPage ()
+    {
+        $aboutUsPageContent = AboutUsPage::query()->with('getTitle', 'getContent')->get();
+        foreach ($aboutUsPageContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $panel = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $aboutKassen = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $aboutAgroNan = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $aboutCompanies = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $triticum = $value ? new PageResource($value) : '';
+                    break;
+                case 5:
+                    $barley = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
-        if (isset($requestData['formData']['othersComment'])) {
-            $feedback->comment = $requestData['formData']['othersComment'];
+        $aboutUsPageApi = new stdClass;
+        $aboutUsPageApi->panel = $panel;
+        $aboutUsPageApi->aboutKassen = $aboutKassen;
+        $aboutUsPageApi->aboutAgroNan = $aboutAgroNan;
+        $aboutUsPageApi->aboutCompanies = $aboutCompanies;
+        $aboutUsPageApi->triticum = $triticum;
+        $aboutUsPageApi->barley = $barley;
+        return $aboutUsPageApi;
+    }
+
+    public function grainExportsPage ()
+    {
+        $grainExportsPageContent = GrainExportsPage::query()->with('getTitle', 'getContent')->get();
+        $questions = new stdClass;
+        $ourDirections = new stdClass;
+        foreach ($grainExportsPageContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $panel = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $questions->grainCollecting = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $questions->grainExport = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $ourDirections->title = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $ourDirections->direct = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
-        if (isset($requestData['formData']['service_id'])) {
-            $feedback->service_id = $requestData['formData']['service_id'];
-            $feedback->type = 'orders';
+        $grainExportsPageApi = new stdClass;
+        $grainExportsPageApi->panel = $panel;
+        $grainExportsPageApi->questions = $questions;
+        $grainExportsPageApi->ourDirections = $ourDirections;
+        return $grainExportsPageApi;
+    }
+
+    public function grainPurchasePage ()
+    {
+        $grainPurchasePageContent = GrainPurchasePage::query()->with('getTitle', 'getContent')->get();
+        $workScheme = new stdClass;
+        foreach ($grainPurchasePageContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $panel = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $workScheme->title = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $workScheme->goodsPurchase = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $workScheme->grainStorage = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $workScheme->transportation = $value ? new PageResource($value) : '';
+                    break;
+                case 5:
+                    $grainExports = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
+        $grainPurchasePageApi = new stdClass;
+        $grainPurchasePageApi->panel = $panel;
+        $grainPurchasePageApi->workScheme = $workScheme;
+        $grainPurchasePageApi->grainExports = $grainExports;
+        return $grainPurchasePageApi;
+    }
 
-        if ($feedback->save()) {
-            return true;
+    public function elevatorServicesPage ()
+    {
+        $elevatorServicesPageContent = ElevatorServicesPage::query()->with('getTitle', 'getContent')->get();
+        $elevatorCompany = new stdClass;
+        $elevatorCompany->statistic = new stdClass;
+        foreach ($elevatorServicesPageContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $panel = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $elevatorCompany->title = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 5:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 6:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 7:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 8:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 9:
+                    $elevatorCompany->points[] = $value ? new PageResource($value) : '';
+                    break;
+                case 10:
+                    $elevatorCompany->aboutBlock = $value ? new PageResource($value) : '';
+                    break;
+                case 11:
+                    $elevatorCompany->goToSiteButton = $value ? new PageResource($value) : '';
+                    break;
+                case 12:
+                    $elevatorCompany->statistic->title = $value ? new PageResource($value) : '';
+                    break;
+                case 13:
+                    $elevatorCompany->statistic->years[] = $value ? new PageResource($value) : '';
+                    break;
+                case 14:
+                    $elevatorCompany->statistic->years[] = $value ? new PageResource($value) : '';
+                    break;
+                case 15:
+                    $elevatorCompany->statistic->years[] = $value ? new PageResource($value) : '';
+                    break;
+                case 16:
+                    $elevatorCompany->statistic->years[] = $value ? new PageResource($value) : '';
+                    break;
+                case 17:
+                    $productionCharacteristics = $value ? new PageResource($value) : '';
+                    break;
+            }
         }
+        $elevatorServicesPageApi = new stdClass;
+        $elevatorServicesPageApi->panel = $panel;
+        $elevatorServicesPageApi->elevatorCompany = $elevatorCompany;
+        $elevatorServicesPageApi->productionCharacteristics = $productionCharacteristics;
+        return $elevatorServicesPageApi;
     }
 
-    public function partners(Request $request)
+    public function contactsPage ()
     {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $partners = PartnerBlock::orderBy('queue', 'asc')->get();
-
-        return response()->json([
-            'data' => PartnerBlockResource::collection($partners),
-        ]);
+        $contactsPageContent = ContactsPage::query()->with('getTitle', 'getContent')->get();
+        $contacts = new stdClass;
+        foreach ($contactsPageContent as $key => $value)
+        {
+            switch($key)
+            {
+                case 0:
+                    $panel = $value ? new PageResource($value) : '';
+                    break;
+                case 1:
+                    $title = $value ? new PageResource($value) : '';
+                    break;
+                case 2:
+                    $contacts->director = $value ? new PageResource($value) : '';
+                    break;
+                case 3:
+                    $contacts->deputyDirector_1 = $value ? new PageResource($value) : '';
+                    break;
+                case 4:
+                    $contacts->deputyDirector_2 = $value ? new PageResource($value) : '';
+                    break;
+                case 5:
+                    $contacts->email = $value ? new PageResource($value) : '';
+                    break;
+                case 6:
+                    $contacts->reception = $value ? new PageResource($value) : '';
+                    break;
+                case 7:
+                    $contacts->salesDepartment = $value ? new PageResource($value) : '';
+                    break;
+            }
+        }
+        $contactsPageApi = new stdClass;
+        $contactsPageApi->panel = $panel;
+        $contactsPageApi->title = $title;
+        $contactsPageApi->contacts = $contacts;
+        return $contactsPageApi;
     }
 
-    public function news(Request $request)
+    public function header ()
     {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-
-        $news = News::orderByDesc('created_at')->paginate(20);
-
-        return response()->json([
-            'data' => new ResourcePaginator(NewsResource::collection($news)),
-        ]);
+        $logo = Logo::first();
+        $headerApi = new stdClass;
+        $headerApi->logo = $logo ? new LogoResource($logo) : '';
+        $headerApi->navbar = $this->navbar();
+        return $headerApi;
     }
 
-    public function mainNews(Request $request)
+    public function footer ()
     {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-
-        $news = News::orderByDesc('created_at')->paginate(4);
-
-        return response()->json([
-            'data' => new ResourcePaginator(NewsResource::collection($news)),
-        ]);
-    }
-
-    public function newsMobile(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-//        $news = News::join('translates as title', 'title.id', 'news.title')
-//            ->join('translates as content', 'content.id', 'news.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'news.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'news.meta_description')
-//            ->select('news.id', 'news.viewing', 'news.image', 'news.video', 'news.link', 'news.popular',
-//                'news.created_at', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content',
-//                'metaTitle.'. $lang . ' as meta_title', 'metaDescription.'. $lang . ' as meta_description',
-//            )
-//            ->orderBy('created_at', 'desc')
-//            ->paginate(4);
-        $news = News::orderByDesc('created_at')->paginate(16);
-
-
-        return response()->json([
-            'data' => new ResourcePaginator(NewsResource::collection($news)),
-        ]);
-    }
-
-    public function technologies(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-//        $technologies = Technology::join('translates as title', 'title.id', 'technology.title')
-//            ->join('translates as content', 'content.id', 'technology.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'technology.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'technology.meta_description')
-//            ->select('technology.id', 'technology.image', 'technology.viewing', 'title.' . $lang . ' as title',
-//                'content.' . $lang . ' as content', 'technology.video', 'technology.created_at',
-//                'metaTitle.'. $lang . ' as meta_title', 'metaDescription.'. $lang . ' as meta_description',
-//            )
-//            ->orderBy('technology.created_at', 'desc')
-//            ->paginate(20);
-        $technologies = Technology::orderByDesc('created_at')->paginate(20);
-
-        return response()->json([
-            'data' => new ResourcePaginator(TechnologyResource::collection($technologies)),
-        ]);
-    }
-
-    public function technologiesMobile(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-//        $technologies = Technology::join('translates as title', 'title.id', 'technology.title')
-//            ->join('translates as content', 'content.id', 'technology.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'technology.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'technology.meta_description')
-//            ->select('technology.id', 'technology.image', 'technology.viewing', 'title.' . $lang . ' as title',
-//                'content.' . $lang . ' as content', 'technology.video', 'technology.created_at',
-//                'metaTitle.'. $lang . ' as meta_title', 'metaDescription.'. $lang . ' as meta_description',
-//            )
-//            ->orderBy('technology.created_at', 'desc')
-//            ->paginate(4);
-        $technologies = Technology::orderByDesc('created_at')->paginate(16);
-
-        return response()->json([
-            'data' => new ResourcePaginator(TechnologyResource::collection($technologies)),
-        ]);
-    }
-
-    public function newsById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:news,id',
-        ]);
-        $lang = $request->lang;
-//        $news = News::query()
-//            ->select(['news.*', 'metaTitle.' . $lang . ' as title', 'metaDesc.' . $lang . ' as content'])
-//            ->leftJoin('translates as metaTitle', 'metaTitle.id', 'news.meta_title')
-//            ->leftJoin('translates as metaDesc', 'metaDesc.id', 'news.meta_description')
-//            ->where('news.id', $request->id)
-//            ->get();
-        $news = News::find($request['id']);
-
-        $similars = News::join('translates as title', 'title.id', 'news.title')
-            ->join('translates as content', 'content.id', 'news.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'news.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'news.meta_description')
-            ->select('news.id', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content', 'news.image',
-                'news.created_at', 'news.popular',
-                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->where('news.id', '!=', $news->id)
-            ->latest()->take(4)->get();
-
-        $populars = News::join('translates as title', 'title.id', 'news.title')
-            ->join('translates as content', 'content.id', 'news.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'news.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'news.meta_description')
-            ->select('news.id', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content',
-                'news.image', 'news.created_at', 'news.viewing', 'news.popular',
-                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->where('news.popular', true)
-            ->orderBy('news.viewing', 'desc')
-            ->take(5)
-            ->get();
-
-        return response()->json([
-            'data' => new NewsResource($news),
-            'similars' => $similars,
-            'populars' => $populars
-        ]);
-    }
-
-    public function analyticsById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:analytics,id',
-        ]);
-        $lang = $request->lang;
-
-        $analytics = Analytics::find($request['id']);
-
-        $similars = Analytics::join('translates as title', 'title.id', 'analytics.title')
-            ->join('translates as content', 'content.id', 'analytics.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'analytics.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'analytics.meta_description')
-            ->select('analytics.id', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content', 'analytics.image',
-                'analytics.created_at',
-                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->where('analytics.id', '!=', $analytics->id)
-            ->latest()->take(4)->get();
-
-
-        return response()->json([
-            'data' => new AnalyticsResource($analytics),
-            'similars' => $similars,
-        ]);
-    }
-
-    public function technologyById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:technology,id',
-        ]);
-        $lang = $request->lang;
-        $tech = Technology::find($request['id']);
-
-        return response()->json([
-            'data' => new TechnologyResource($tech),
-        ]);
-    }
-
-    public function partnerById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:partner,id',
-        ]);
-        $lang = $request->lang;
-        $tech = Partner::find($request['id']);
-
-        return response()->json([
-            'data' => new PartnerResource($tech),
-        ]);
-    }
-
-    public function serviceById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:services,id',
-        ]);
-        $lang = $request->lang;
-        $tech = Service::find($request['id']);
-
-        return response()->json([
-            'data' => new ServiceResource($tech),
-        ]);
-    }
-
-    public function opinions(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-
-//        $lang = $request->lang;
-//        $opinions = Opinion::join('translates as title', 'title.id', 'opinion.title')
-//            ->join('translates as content', 'content.id', 'opinion.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'opinion.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'opinion.meta_description')
-//            ->select('opinion.id', 'opinion.image', 'opinion.viewing', 'title.' . $lang . ' as title',
-//                'content.' . $lang . ' as content', 'opinion.created_at',
-//                'metaTitle.'. $lang . ' as meta_title', 'metaDescription.'. $lang . ' as meta_description',
-//            )
-//            ->orderBy('opinion.created_at', 'desc')
-//            ->paginate(20);
-
-        $opinions = Opinion::orderByDesc('created_at')
-            ->paginate(20);
-
-
-        return response()->json([
-            'data' => new ResourcePaginator(OpinionResource::collection($opinions)),
-        ]);
-    }
-
-    public function opinionsMobile(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-        ]);
-
-//        $lang = $request->lang;
-//        $opinions = Opinion::join('translates as title', 'title.id', 'opinion.title')
-//            ->join('translates as content', 'content.id', 'opinion.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'opinion.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'opinion.meta_description')
-//            ->select('opinion.id', 'opinion.image', 'opinion.viewing', 'title.' . $lang . ' as title',
-//                'content.' . $lang . ' as content', 'opinion.created_at',
-//                'metaTitle.'. $lang . ' as meta_title', 'metaDescription.'. $lang . ' as meta_description',
-//            )
-//            ->paginate(16);
-
-        $opinions = Opinion::orderByDesc('created_at')
-            ->paginate(16);
-
-        return response()->json([
-            'data' => new ResourcePaginator(OpinionResource::collection($opinions)),
-        ]);
-    }
-
-    public function opinionById(Request $request)
-    {
-        $request->validate([
-            'lang' => 'required',
-            'id' => 'required|exists:opinion,id',
-        ]);
-        $lang = $request->lang;
-
-        $opinion = Opinion::find($request['id']);
-
-//        $opinion = Opinion::join('translates as title', 'title.id', 'opinion.title')
-//            ->join('translates as content', 'content.id', 'opinion.content')
-//            ->join('translates as metaTitle', 'metaTitle.id', 'opinion.meta_title')
-//            ->join('translates as metaDescription', 'metaDescription.id', 'opinion.meta_description')
-//            ->select('opinion.id', 'opinion.image', 'opinion.viewing', 'title.' . $lang . ' as title',
-//                'content.' . $lang . ' as content', 'opinion.created_at',
-//                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-//            )
-//            ->where('opinion.id', $request['id'])
-//            ->first();
-
-        $similars = Opinion::join('translates as title', 'title.id', 'opinion.title')
-            ->join('translates as content', 'content.id', 'opinion.content')
-            ->join('translates as metaTitle', 'metaTitle.id', 'opinion.meta_title')
-            ->join('translates as metaDescription', 'metaDescription.id', 'opinion.meta_description')
-            ->select('opinion.id', 'title.' . $lang . ' as title', 'content.' . $lang . ' as content', 'opinion.image',
-                'opinion.created_at',
-                'metaTitle.' . $lang . ' as meta_title', 'metaDescription.' . $lang . ' as meta_description',
-            )
-            ->where('opinion.id', '!=', $opinion->id)
-            ->latest()
-            ->take(3)
-            ->get();
-
-        return response()->json([
-            'data' => new OpinionResource($opinion),
-            'similars' => $similars,
-        ]);
-    }
-
-    public function search(Request $request)
-    {
-        $request->validate([
-            'text' => 'required',
-            'lang' => 'required',
-        ]);
-        $lang = $request->lang;
-        $keyword = $request->text;
-        $data = News::join('translates as p_title', 'p_title.id', 'news.title')
-            ->join('translates as p_description', 'p_description.id', 'news.content')
-            ->where('p_title.' . $lang, 'LIKE', '%' . $keyword . '%')
-            ->orWhere('p_description.' . $lang, 'LIKE', '%' . $keyword . '%')
-            ->select('news.id', 'p_title.' . $lang . ' as title', 'p_description.' . $lang . ' as content', 'news.created_at', 'news.image')
-            ->orderBy('news.created_at', 'desc')
-            ->paginate(12);
-
-        return response()->json([
-            'data' => $data
-        ]);
+        $forms = new stdClass;
+        $forms->application = $this->applicationFormContent();
+        $forms->subscription = $this->subscriptionFormContent();
+        $footerApi = new stdClass;
+        $footerApi->forms = $forms;
+        $footerApi->navbar = $this->navbar();
+        $footerApi->contacts = $this->footerContacts();
+        return $footerApi;
     }
 }
