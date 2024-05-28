@@ -8,6 +8,7 @@ use App\Http\Resources\PartnerResource;
 use App\Http\Resources\NavBarResource;
 use App\Http\Resources\LogoResource;
 use App\Http\Resources\FooterContactsResource;
+use App\Http\Resources\MetaDataResource;
 use App\Models\Pages\MainPage;
 use App\Models\Pages\AboutUsPage;
 use App\Models\Pages\GrainExportsPage;
@@ -18,6 +19,7 @@ use App\Models\NavBar;
 use App\Models\Logo;
 use App\Models\Partner;
 use App\Models\FooterContact;
+use App\Models\MetaData;
 use App\Models\FormsContent\ApplicationFormContent;
 use App\Models\FormsContent\SubscriptionFormContent;
 use Illuminate\Http\Request;
@@ -132,6 +134,7 @@ class ApiController extends Controller
     public function mainPage ()
     {
         $mainPageContent = MainPage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 1)->first();
         $partners = Partner::query()->get();
         $partners = PartnerResource::collection($partners);
         foreach ($partners as $item)
@@ -269,12 +272,14 @@ class ApiController extends Controller
         $mainPageApi->exportGrain = $exportGrain;
         $mainPageApi->advantage = $advantage;
         $mainPageApi->ourPartners = $ourPartners;
+        $mainPageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $mainPageApi;
     }
 
     public function aboutUsPage ()
     {
         $aboutUsPageContent = AboutUsPage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 2)->first();
         foreach ($aboutUsPageContent as $key => $value)
         {
             switch($key)
@@ -306,12 +311,14 @@ class ApiController extends Controller
         $aboutUsPageApi->aboutCompanies = $aboutCompanies;
         $aboutUsPageApi->triticum = $triticum;
         $aboutUsPageApi->barley = $barley;
+        $aboutUsPageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $aboutUsPageApi;
     }
 
     public function grainExportsPage ()
     {
         $grainExportsPageContent = GrainExportsPage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 3)->first();
         $questions = new stdClass;
         $ourDirections = new stdClass;
         foreach ($grainExportsPageContent as $key => $value)
@@ -339,12 +346,14 @@ class ApiController extends Controller
         $grainExportsPageApi->panel = $panel;
         $grainExportsPageApi->questions = $questions;
         $grainExportsPageApi->ourDirections = $ourDirections;
+        $grainExportsPageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $grainExportsPageApi;
     }
 
     public function grainPurchasePage ()
     {
         $grainPurchasePageContent = GrainPurchasePage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 4)->first();
         $workScheme = new stdClass;
         foreach ($grainPurchasePageContent as $key => $value)
         {
@@ -374,12 +383,14 @@ class ApiController extends Controller
         $grainPurchasePageApi->panel = $panel;
         $grainPurchasePageApi->workScheme = $workScheme;
         $grainPurchasePageApi->grainExports = $grainExports;
+        $grainPurchasePageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $grainPurchasePageApi;
     }
 
     public function elevatorServicesPage ()
     {
         $elevatorServicesPageContent = ElevatorServicesPage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 5)->first();
         $elevatorCompany = new stdClass;
         $elevatorCompany->statistic = new stdClass;
         foreach ($elevatorServicesPageContent as $key => $value)
@@ -446,12 +457,14 @@ class ApiController extends Controller
         $elevatorServicesPageApi->panel = $panel;
         $elevatorServicesPageApi->elevatorCompany = $elevatorCompany;
         $elevatorServicesPageApi->productionCharacteristics = $productionCharacteristics;
+        $elevatorServicesPageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $elevatorServicesPageApi;
     }
 
     public function contactsPage ()
     {
         $contactsPageContent = ContactsPage::query()->with('getTitle', 'getContent')->get();
+        $metaData = MetaData::where('page_id', 6)->first();
         $contacts = new stdClass;
         foreach ($contactsPageContent as $key => $value)
         {
@@ -487,6 +500,7 @@ class ApiController extends Controller
         $contactsPageApi->panel = $panel;
         $contactsPageApi->title = $title;
         $contactsPageApi->contacts = $contacts;
+        $contactsPageApi->meta = $metaData ? new MetaDataResource($metaData) : '';
         return $contactsPageApi;
     }
 

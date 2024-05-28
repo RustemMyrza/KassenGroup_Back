@@ -66,4 +66,23 @@ Route::prefix('admin')->middleware('auth')->group(function(): void{
         Route::resource('elevatorServices', 'App\Http\Controllers\Backend\Pages\ElevatorServicesPageController');
         Route::resource('contacts', 'App\Http\Controllers\Backend\Pages\ContactsPageController');
     });
+    Route::prefix('meta/pages/')->group(function(): void{
+        Route::get('main', 'App\Http\Controllers\Backend\MetaData\Pages\MainPageMetaController@index');
+        Route::post('main', 'App\Http\Controllers\Backend\MetaData\Pages\MainPageMetaController@store');
+
+        Route::get('about-us', 'App\Http\Controllers\Backend\MetaData\Pages\AboutUsPageMetaController@index');
+        Route::post('about-us', 'App\Http\Controllers\Backend\MetaData\Pages\AboutUsPageMetaController@store');
+
+        Route::get('contacts', 'App\Http\Controllers\Backend\MetaData\Pages\ContactsPageMetaController@index');
+        Route::post('contacts', 'App\Http\Controllers\Backend\MetaData\Pages\ContactsPageMetaController@store');
+
+        Route::get('elevator-services', 'App\Http\Controllers\Backend\MetaData\Pages\ElevatorServicesPageMetaController@index');
+        Route::post('elevator-services', 'App\Http\Controllers\Backend\MetaData\Pages\ElevatorServicesPageMetaController@store');
+
+        Route::get('grain-exports', 'App\Http\Controllers\Backend\MetaData\Pages\GrainExportsPageMetaController@index');
+        Route::post('grain-exports', 'App\Http\Controllers\Backend\MetaData\Pages\GrainExportsPageMetaController@store');
+
+        Route::get('grain-purchase', 'App\Http\Controllers\Backend\MetaData\Pages\GrainPurchasePageMetaController@index');
+        Route::post('grain-purchase', 'App\Http\Controllers\Backend\MetaData\Pages\GrainPurchasePageMetaController@store');
+    });
 });

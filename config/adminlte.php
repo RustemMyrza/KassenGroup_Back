@@ -289,6 +289,42 @@ return [
             ],
         ],
         [
+            'text'    => 'Метаданные',
+            'icon'    => 'fas fa-fw fa-share',
+            'submenu' => [
+                [
+                    'text' => 'Главная страница',
+                    'url'  => '/admin/meta/pages/main',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'О компании',
+                    'url'  => '/admin/meta/pages/about-us',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Экспорт зерна',
+                    'url'  => '/admin/meta/pages/grain-exports',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Закуп зерна',
+                    'url'  => '/admin/meta/pages/grain-purchase',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Услуги элеватора',
+                    'url'  => '/admin/meta/pages/elevator-services',
+                    'icon'    => 'fas fa-fw fa-file',
+                ],
+                [
+                    'text' => 'Контакты',
+                    'url'  => '/admin/meta/pages/contacts',
+                    'icon'    => 'fas fa-fw fa-file',
+                ]
+            ],
+        ],
+        [
             'text'    => 'Страницы',
             'icon'    => 'fas fa-fw fa-share',
             'submenu' => [
