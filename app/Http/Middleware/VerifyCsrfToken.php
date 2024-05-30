@@ -13,6 +13,8 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'http://127.0.0.1:8000/api/form/subscription',
-        'http://127.0.0.1:8000/api/form/application'
+        'http://127.0.0.1:8000/api/form/application',
+        'https://admin.kassengroup.kz/api/form/application',
+        'https://admin.kassengroup.kz/api/form/subscription'
     ];
 }
