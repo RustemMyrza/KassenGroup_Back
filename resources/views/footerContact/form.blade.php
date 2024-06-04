@@ -14,8 +14,8 @@
     <div class="tab-pane active in ru-content" id="custom-tabs-one-ru" role="tabpanel" aria-labelledby="custom-tabs-one-ru-tab">
         <div class="form-group {{ $errors->has('text') ? 'has-error' : ''}}">
             <label for="text_ru" class="control-label">{{ 'Текст контакта RU' }}</label>
-            <!-- <input class="form-control" name="content[ru]" type="text" id="content_ru" value="{{ isset($translatedData['content']->ru) ? $translatedData['content']->ru : ''}}" > -->
-            <textarea class="ckeditor_textarea" name="text[ru]" id="text[ru]" cols="30" rows="10">{{ isset($translatedData['text']->ru) ? $translatedData['text']->ru : ''}}</textarea>
+            <!-- <input class="form-control" name="content[ru]" type="text" id="content_ru" value="{{ isset($translatedText['content']->ru) ? $translatedText['content']->ru : ''}}" > -->
+            <textarea class="ckeditor_textarea" name="text[ru]" id="text[ru]" cols="30" rows="10">{{ isset($translatedText->ru) ? $translatedText->ru : ''}}</textarea>
             {!! $errors->first('text[ru]"', '<p class="help-block">:message</p>') !!}
         </div>
     </div>
@@ -23,8 +23,8 @@
     <div class="tab-pane fade en-content" id="custom-tabs-one-en" role="tabpanel" aria-labelledby="custom-tabs-one-en-tab">
         <div class="form-group {{ $errors->has('text') ? 'has-error' : ''}}">
             <label for="text_ru" class="control-label">{{ 'Текст контакта EN' }}</label>
-            <!-- <input class="form-control" name="content[en]" type="text" id="content_ru" value="{{ isset($translatedData['content']->en) ? $translatedData['content']->en : ''}}" > -->
-            <textarea class="ckeditor_textarea" name="text[en]" id="text[en]" cols="30" rows="10">{{ isset($translatedData['text']->en) ? $translatedData['text']->en : ''}}</textarea>
+            <!-- <input class="form-control" name="content[en]" type="text" id="content_ru" value="{{ isset($translatedText['content']->en) ? $translatedText['content']->en : ''}}" > -->
+            <textarea class="ckeditor_textarea" name="text[en]" id="text[en]" cols="30" rows="10">{{ isset($translatedText->en) ? $translatedText->en : ''}}</textarea>
             {!! $errors->first('text[en]"', '<p class="help-block">:message</p>') !!}
         </div>
     </div>
@@ -32,8 +32,8 @@
     <div class="tab-pane fade kz-content" id="custom-tabs-one-kz" role="tabpanel" aria-labelledby="custom-tabs-one-kz-tab">
         <div class="form-group {{ $errors->has('text') ? 'has-error' : ''}}">
             <label for="text_kz" class="control-label">{{ 'Текст контакта KZ' }}</label>
-            <!-- <input class="form-control" name="content[kz]" type="text" id="content_kz" value="{{ isset($translatedData['content']->kz) ? $translatedData['content']->kz : ''}}" > -->
-            <textarea class="ckeditor_textarea" name="text[kz]" id="text[kz]" cols="30" rows="10">{{ isset($translatedData['text']->kz) ? $translatedData['text']->kz : ''}}</textarea>
+            <!-- <input class="form-control" name="content[kz]" type="text" id="content_kz" value="{{ isset($translatedText['content']->kz) ? $translatedText['content']->kz : ''}}" > -->
+            <textarea class="ckeditor_textarea" name="text[kz]" id="text[kz]" cols="30" rows="10">{{ isset($translatedText->kz) ? $translatedText->kz : ''}}</textarea>
             {!! $errors->first('text[kz]"', '<p class="help-block">:message</p>') !!}
         </div>
     </div>
