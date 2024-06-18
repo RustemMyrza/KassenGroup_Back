@@ -112,15 +112,12 @@ class ApiController extends Controller
                     $phoneNumbers->reception = $value ? new FooterContactsResource($value) : '';
                     break;
                 case 2:
-                    $emails->elevator = $value ? new FooterContactsResource($value) : '';
-                    break;
-                case 3:
                     $emails->agroNan = $value ? new FooterContactsResource($value) : '';
                     break;
-                case 4:
+                case 3:
                     $phoneNumbers->deputyDirector = $value ? new FooterContactsResource($value) : '';
                     break;
-                case 5:
+                case 4:
                     $phoneNumbers->director = $value ? new FooterContactsResource($value) : '';
                     break;
             }
