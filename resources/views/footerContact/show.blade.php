@@ -7,7 +7,6 @@
 @stop
 
 @section('content')
-
     <div class="card-body">
 
         <a href="{{ url('/admin/footer-contact') }}" title="Назад"><button class="btn btn-warning btn-sm"><i class="fa fa-arrow-left" aria-hidden="true"></i> Назад</button></a>

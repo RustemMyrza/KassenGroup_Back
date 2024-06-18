@@ -110,17 +110,8 @@ abstract class PageController extends Controller
         $pageContent = $modelClass::findOrFail($id);
         if ($request->hasFile('image')) 
         {
-            if ($pageContent->image != null) {
-                unlink($pageContent->image);
-            }
             $path = $this->uploadImage($request->file('image'));
             $pageContent->image = $path;
-        }
-        else
-        {
-            if ($pageContent->image != null) {
-                unlink($pageContent->image);
-            }
         }
 
         $title = Translate::find($pageContent->title);
