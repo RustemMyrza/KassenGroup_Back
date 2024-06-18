@@ -109,17 +109,8 @@ class LogoController extends Controller
         $logo = Logo::findOrFail($id);
         if ($request->hasFile('image')) 
         {
-            if ($logo->logo != null) {
-                unlink($logo->logo);
-            }
             $path = $this->uploadImage($request->file('image'));
             $logo->logo = $path;
-        }
-        else
-        {
-            if ($logo->logo != null) {
-                unlink($logo->logo);
-            }
         }
         $logo->update();
 
