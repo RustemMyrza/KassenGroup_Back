@@ -39,6 +39,8 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/admin/edit', [App\Http\Controllers\HomeController::class, 'edit'])->name('edit')->middleware('auth');
 Route::post('/admin/save', [App\Http\Controllers\HomeController::class, 'save'])->name('save')->middleware('auth');
 Route::prefix('admin')->middleware('auth')->group(function(): void{
+    Route::get('whatsapp', 'App\Http\Controllers\Backend\WhatsappController@edit')->name('whatsapp.edit');
+    Route::patch('whatsapp', 'App\Http\Controllers\Backend\WhatsappController@update')->name('whatsapp.update');
     Route::resource('partner', 'App\Http\Controllers\Backend\PartnerController');
     Route::resource('logo', 'App\Http\Controllers\Backend\LogoController');
     Route::resource('navbar', 'App\Http\Controllers\Backend\NavBarController');

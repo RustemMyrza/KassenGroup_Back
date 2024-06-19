@@ -251,6 +251,11 @@ return [
             'icon' => 'fas fa-fw fa-users',
         ],
         [
+            'text' => 'Whatsapp',
+            'url'  => '/admin/whatsapp',
+            'icon' => 'fas fa-fw fa-phone',
+        ],
+        [
             'text'    => 'Формы',
             'icon'    => 'fas fa-fw fa-share',
             'submenu' => [

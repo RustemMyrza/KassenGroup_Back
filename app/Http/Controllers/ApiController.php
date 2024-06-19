@@ -9,6 +9,7 @@ use App\Http\Resources\NavBarResource;
 use App\Http\Resources\LogoResource;
 use App\Http\Resources\FooterContactsResource;
 use App\Http\Resources\MetaDataResource;
+use App\Http\Resources\WhatsappResource;
 use App\Models\Pages\MainPage;
 use App\Models\Pages\AboutUsPage;
 use App\Models\Pages\GrainExportsPage;
@@ -20,6 +21,7 @@ use App\Models\Logo;
 use App\Models\Partner;
 use App\Models\FooterContact;
 use App\Models\MetaData;
+use App\Models\Whatsapp;
 use App\Models\FormsContent\ApplicationFormContent;
 use App\Models\FormsContent\SubscriptionFormContent;
 use Illuminate\Http\Request;
@@ -99,6 +101,8 @@ class ApiController extends Controller
     private function footerContacts ()
     {
         $footerContactTexts = FooterContact::query()->with('getText')->get();
+        $whatsappLink = Whatsapp::first();
+        $whatsappLink = new WhatsappResource($whatsappLink);
         $emails = new stdClass;
         $phoneNumbers = new stdClass;
         foreach($footerContactTexts as $key => $value)
@@ -114,17 +118,12 @@ class ApiController extends Controller
                 case 2:
                     $emails->agroNan = $value ? new FooterContactsResource($value) : '';
                     break;
-                case 3:
-                    $phoneNumbers->deputyDirector = $value ? new FooterContactsResource($value) : '';
-                    break;
-                case 4:
-                    $phoneNumbers->director = $value ? new FooterContactsResource($value) : '';
-                    break;
             }
         }
         $footerContactsApi = new stdClass;
         $footerContactsApi->phoneNumbers = $phoneNumbers;
         $footerContactsApi->emails = $emails;
+        $footerContactsApi->whatsapp = $whatsappLink;
         return $footerContactsApi;
     }
     
